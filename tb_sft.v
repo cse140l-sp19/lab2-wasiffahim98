@@ -1,35 +1,3 @@
-
-// --------------------------------------------------------------------
-// >>>>>>>>>>>>>>>>>>>>>>>>> COPYRIGHT NOTICE <<<<<<<<<<<<<<<<<<<<<<<<<
-// --------------------------------------------------------------------
-// Copyright (c) 2019 by UCSD CSE 140L
-// --------------------------------------------------------------------
-//
-// Permission:
-//
-//   This code for use in UCSD CSE 140L.
-//   It is synthesisable for Lattice iCEstick 40HX.  
-//
-// Disclaimer:
-//
-//   This Verilog source code is intended as a design reference
-//   which illustrates how these types of functions can be implemented.
-//   It is the user's responsibility to verify their design for
-//   consistency and functionality through the use of formal
-//   verification methods.  
-//
-// -------------------------------------------------------------------- //           
-//                     Lih-Feng Tsaur
-//                     Bryan Chin
-//                     UCSD CSE Department
-//                     9500 Gilman Dr, La Jolla, CA 92093
-//                     U.S.A
-//
-// --------------------------------------------------------------------
-
-
-
-
 //
 // software testbench for simulation
 //
@@ -238,30 +206,49 @@ module tb_sft(
       @(posedge ut_tx_data_rdy);
       
       if (svOp == "+") begin
+	 firstOne = 1;
 	 op1bin = ascii2bin(svOp1);
 	 op2bin = ascii2bin(svOp2);
 	 tres = op1bin + op2bin;
 	 if ( tres != ascii2bin(ut_tx_data)) begin
-	    $sformat(tStr, "\"output\" : \"fail : %s + %s = %d != %s\",", svOp1, svOp2, tres, ut_tx_data);
+	    $sformat(tStr, "\"output\" : \"fail : %s + %s = 0x%x != %s\",", svOp1, svOp2, tres, ut_tx_data);
 	    errorCount = errorCount + 1;
 	    score = 0;
 	 end else
-	    $sformat(tStr, "\"output\" : \"pass : %s + %s %d  == %s\",", svOp1, svOp2, tres, ut_tx_data);
+	    $sformat(tStr, "\"output\" : \"pass : %s + %s 0x%x  == %s\",", svOp1, svOp2, tres, ut_tx_data);
+	 jsonTest(firstOne, testCount, tStr, score);
+
+	 testCount = testCount + 1;
+	 if (tres != leds) begin
+	    $sformat(tStr, "\"output\" : \"fail : %s + %s = 0x%x != leds %b \",", svOp1, svOp2, tres, leds);
+	    errorCount = errorCount + 1;
+	    score = 0;
+	 end else
+	    $sformat(tStr, "\"output\" : \"pass : %s + %s 0x%x  == leds %b\",", svOp1, svOp2, tres, leds);
 	 jsonTest(firstOne, testCount, tStr, score);
       end
       else begin
+	 firstOne = 1;
 	 op1bin = ascii2bin(svOp1);
 	 op2bin = ascii2bin(svOp2);
 	 tres = op1bin - op2bin;
 	 if ( tres != ascii2bin(ut_tx_data)) begin
-	    $sformat(tStr, "\"output\" : \"fail : %s - %s %d != %s\",", svOp1, svOp2, tres, ut_tx_data);
+	    $sformat(tStr, "\"output\" : \"fail : %s - %s 0x%x != %s\",", svOp1, svOp2, tres, ut_tx_data);
 	    errorCount = errorCount + 1;
 	    score = 0;
 	 end else
-	    $sformat(tStr, "\"output\" : \"pass : %s - %s %d == %s\",", svOp1, svOp2, tres, ut_tx_data);
+	    $sformat(tStr, "\"output\" : \"pass : %s - %s 0x%x == %s\",", svOp1, svOp2, tres, ut_tx_data);
+	 jsonTest(firstOne, testCount, tStr, score);
+
+	 testCount = testCount + 1;
+	 if (tres != leds) begin
+	    $sformat(tStr, "\"output\" : \"fail : %s - %s = 0x%x != leds %b \",", svOp1, svOp2, tres, leds);
+	    errorCount = errorCount + 1;
+	    score = 0;
+	 end else
+	    $sformat(tStr, "\"output\" : \"pass : %s - %s 0x%x  == leds %b\",", svOp1, svOp2, tres, leds);
 	 jsonTest(firstOne, testCount, tStr, score);
       end // else: !if(svOp == "+")
-      firstOne = 1;
    end	 
 
 endmodule // tb_sft
