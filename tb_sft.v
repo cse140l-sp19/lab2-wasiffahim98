@@ -206,48 +206,35 @@ module tb_sft(
       @(posedge ut_tx_data_rdy);
       
       if (svOp == "+") begin
-	 firstOne = 1;
 	 op1bin = ascii2bin(svOp1);
 	 op2bin = ascii2bin(svOp2);
 	 tres = op1bin + op2bin;
-	 if ( tres != ascii2bin(ut_tx_data)) begin
-	    $sformat(tStr, "\"output\" : \"fail : %s + %s = 0x%x != %s\",", svOp1, svOp2, tres, ut_tx_data);
-	    errorCount = errorCount + 1;
-	    score = 0;
+	 if ( tres == ascii2bin(ut_tx_data)) begin
+	    $display("pass : %s + %s = 0x%x != %s", svOp1, svOp2, tres, ut_tx_data);
 	 end else
-	    $sformat(tStr, "\"output\" : \"pass : %s + %s 0x%x  == %s\",", svOp1, svOp2, tres, ut_tx_data);
-	 jsonTest(firstOne, testCount, tStr, score);
+	    $display("fail : %s + %s 0x%x  == %s", svOp1, svOp2, tres, ut_tx_data);
 
 	 testCount = testCount + 1;
-	 if (tres != leds) begin
-	    $sformat(tStr, "\"output\" : \"fail : %s + %s = 0x%x != leds %b \",", svOp1, svOp2, tres, leds);
-	    errorCount = errorCount + 1;
-	    score = 0;
+	 if (tres == leds) begin
+	    $display("pass : %s + %s = 0x%x != leds %b", svOp1, svOp2, tres, leds);
 	 end else
-	    $sformat(tStr, "\"output\" : \"pass : %s + %s 0x%x  == leds %b\",", svOp1, svOp2, tres, leds);
-	 jsonTest(firstOne, testCount, tStr, score);
+	    $display("fail : %s + %s 0x%x  == leds %b", svOp1, svOp2, tres, leds);
       end
       else begin
 	 firstOne = 1;
 	 op1bin = ascii2bin(svOp1);
 	 op2bin = ascii2bin(svOp2);
 	 tres = op1bin - op2bin;
-	 if ( tres != ascii2bin(ut_tx_data)) begin
-	    $sformat(tStr, "\"output\" : \"fail : %s - %s 0x%x != %s\",", svOp1, svOp2, tres, ut_tx_data);
-	    errorCount = errorCount + 1;
-	    score = 0;
+	 if ( tres == ascii2bin(ut_tx_data)) begin
+	    $display("pass : %s - %s 0x%x != %s", svOp1, svOp2, tres, ut_tx_data);
 	 end else
-	    $sformat(tStr, "\"output\" : \"pass : %s - %s 0x%x == %s\",", svOp1, svOp2, tres, ut_tx_data);
-	 jsonTest(firstOne, testCount, tStr, score);
+	    $display("fail : %s - %s 0x%x == %s", svOp1, svOp2, tres, ut_tx_data);
 
 	 testCount = testCount + 1;
-	 if (tres != leds) begin
-	    $sformat(tStr, "\"output\" : \"fail : %s - %s = 0x%x != leds %b \",", svOp1, svOp2, tres, leds);
-	    errorCount = errorCount + 1;
-	    score = 0;
+	 if (tres == leds) begin
+	    $display("pass : %s - %s = 0x%x != leds %b", svOp1, svOp2, tres, leds);
 	 end else
-	    $sformat(tStr, "\"output\" : \"pass : %s - %s 0x%x  == leds %b\",", svOp1, svOp2, tres, leds);
-	 jsonTest(firstOne, testCount, tStr, score);
+	    $display("fail : %s - %s 0x%x  == leds %b", svOp1, svOp2, tres, leds);
       end // else: !if(svOp == "+")
    end	 
 

@@ -378,14 +378,14 @@ module latticehx1k(
    assign test3 = 1'b0;
    // for simple feedback path
    // pllout =   Frefclock * (DIVF+1) / [ 2^divq x (divr+1)]
-   //  12 MHz * 4   / [ 2^0 x 1] = 48 MHz
+   //  12 MHz * 8   / [ 2^1 x 1] = 48 MHz
    //  
   SB_PLL40_CORE #(.FEEDBACK_PATH("SIMPLE"),
                   .PLLOUT_SELECT("GENCLK"),
                   .DIVR(4'b0000),
-		  .DIVF(7'd3),      // 48 MHZ
+		  .DIVF(7'd7),      // 48 MHZ
 //                  .DIVF(7'd0),        // 12 MHZ
-                  .DIVQ(3'b000),
+                  .DIVQ(3'b001),
                   .FILTER_RANGE(3'b001)
                  ) uut (
                          .REFERENCECLK(clk_in),
