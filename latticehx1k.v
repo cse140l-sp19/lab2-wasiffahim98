@@ -31,7 +31,7 @@
 // uncomment this define if you want to target hardware
 // otherwise, this file will be configured for the simulator
 //
-// `define HW
+`define HW
 
 //
 // Revision History : 0.0
@@ -370,7 +370,6 @@ module latticehx1k(
 `ifdef HW
    wire tb_sim_rst = 1'b0;
    
-   assign tx = 1'b0;
    assign to_ir = 1'b0;
    assign sd = 1'b0;
    assign test1 = 1'b0;
@@ -378,22 +377,43 @@ module latticehx1k(
    assign test3 = 1'b0;
    // for simple feedback path
    // pllout =   Frefclock * (DIVF+1) / [ 2^divq x (divr+1)]
-   //  12 MHz * 8   / [ 2^1 x 1] = 48 MHz
+   //  12 MHz * 4   / [ 2^0 x 1] = 48 MHz    // doesn't work in icecube2
+   //  12 MHz * 8   / [ 2^1 x 1] = 48 MHz    // doesn't work in icecube2
+   //  12 MHz * 64   / [ 2^4 x 1] = 48 MHz    // doesn't work in icecube2
    //  
-  SB_PLL40_CORE #(.FEEDBACK_PATH("SIMPLE"),
-                  .PLLOUT_SELECT("GENCLK"),
-                  .DIVR(4'b0000),
-		  .DIVF(7'd7),      // 48 MHZ
-//                  .DIVF(7'd0),        // 12 MHZ
-                  .DIVQ(3'b001),
-                  .FILTER_RANGE(3'b001)
-                 ) uut (
+
+   defparam ice_pll_inst.DIVR = 4'b0000;
+   defparam ice_pll_inst.DIVF = 7'b0111111;
+   
+   
+   defparam ice_pll_inst.DIVQ = 3'b100;
+   defparam ice_pll_inst.FILTER_RANGE = 3'b001;
+   defparam ice_pll_inst.FEEDBACK_PATH = "SIMPLE";
+   defparam ice_pll_inst.DELAY_ADJUSTMENT_MODE_FEEDBACK = "FIXED";
+   defparam ice_pll_inst.FDA_FEEDBACK = 4'b0000;
+   defparam ice_pll_inst.DELAY_ADJUSTMENT_MODE_RELATIVE = "FIXED";
+   defparam ice_pll_inst.FDA_RELATIVE = 4'b0000;
+   defparam ice_pll_inst.SHIFTREG_DIV_MODE = 2'b00;
+   defparam ice_pll_inst.PLLOUT_SELECT = "GENCLK";
+   defparam ice_pll_inst.ENABLE_ICEGATE = 1'b0;
+
+
+
+
+   SB_PLL40_CORE ice_pll_inst(
                          .REFERENCECLK(clk_in),
                          .PLLOUTCORE(clk),
                          //.PLLOUTGLOBAL(clk),
                          // .LOCK(D5),
+			.EXTFEEDBACK(),
+			.DYNAMICDELAY(),
                          .RESETB(1'b1),
-                         .BYPASS(1'b0)
+                         .BYPASS(1'b0),
+			.LATCHINPUTVALUE(),
+			.LOCK(),
+			.SDI(),
+			.SDO(),
+			.SCLK()
                         );
 
 `else // !`ifdef HW
