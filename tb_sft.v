@@ -138,14 +138,14 @@ module tb_sft(
       clk12m <= ~clk12m;
    end
 
-//   always @(leds) begin
-//      displayLattice(leds);
-//   end
-
-   always @(posedge ut_tx_data_rdy) begin
-	   #1;
-	   $display("%s", ut_tx_data);
+   always @(leds) begin
+      displayLattice(leds);
    end
+
+//   always @(posedge ut_tx_data_rdy) begin
+//	   #1;
+//	   $display("%s", ut_tx_data);
+//   end
 
  
    
@@ -196,7 +196,9 @@ module tb_sft(
    
    reg [3:0] 		 op1bin;
    reg [3:0] 		 op2bin;
-   
+
+// `define CHECKER
+`ifdef CHECKER   
    always @(posedge ut_tx_data_rdy) begin
       #1;
       testCount = testCount + 1;
@@ -237,5 +239,5 @@ module tb_sft(
 	    $display("fail : %s - %s 0x%x  == leds %b", svOp1, svOp2, tres, leds);
       end // else: !if(svOp == "+")
    end	 
-
+`endif
 endmodule // tb_sft
