@@ -41,14 +41,15 @@
 //  decodeKeys
 //
 // decode the input from the uart (receiver) and decode valid
-// characters
+// characters.
+// 
 //
 module decodeKeys(
-		  output      de_esc,
-		  output      de_hexplus,
-		  output      de_pn,
-		  input [7:0] charData,
-		  input       charDataValid
+		  output      de_esc,        // esc char detected
+		  output      de_hexplus,    // hex char + ;:<=>? detected
+		  output      de_pn,         // detected + or -
+		  input [7:0] charData,      // ascii coming in
+		  input       charDataValid  // valid ascii
 		  );
 
 
