@@ -26,6 +26,10 @@ module tb_sft(
    //
    // convert ascii to binary
    //
+   // Note: this function contains behavioural code
+   // and cannot should not be use in a hardware
+   // implementation.
+   //
    function [4:0] ascii2bin (input [7:0] t);
       reg [7:0] 	   bin8;    // 8 bit binary
       reg [4:0] 	   result;
@@ -40,16 +44,6 @@ module tb_sft(
 	 if ((t >= 8'h50) && (t <= 8'h5f)) begin
 	    bin8 = t - 8'h50;
 	    ascii2bin = {1'b1, bin8[3:0]};
-	 end
-	 else if ((t>= 8'h61) && (t <= 8'h66)) begin
-	    // a-f
-	    bin8 = t - 8'h61;
-	    ascii2bin = {1'b0, bin8[3:0] + 4'ha};
-	 end
-	 else if ((t>= 8'h41) && (t <= 8'h46)) begin
-	    // A-F
-	    bin8 = t - 8'h41;
-	    ascii2bin = {1'b1, bin8[3:0] + 4'ha};
 	 end
 	 else
 	   begin
@@ -72,6 +66,11 @@ module tb_sft(
       end	 
    endtask
 
+
+   //
+   // sendByte
+   // send the byte byt to the DUT
+   //
    task sendByte(input [7:0] byt);
      begin
 		@(posedge clk12m);
@@ -82,6 +81,11 @@ module tb_sft(
      end
    endtask
 
+
+   //
+   // waitN
+   // wait N cycles
+   //
    task waitN(input integer N);
       begin
 	 repeat (N) begin
@@ -95,7 +99,14 @@ module tb_sft(
    reg [7:0] svOp1;
    reg [7:0] svOp2;
    reg [7:0] svOp;
-   
+
+   //
+   // doOper
+   // this task takes 3inputs (op1, op2 and op)
+   // it saves each operation in svOp1, svOp2 and svOp respectively.
+   // Then it callse send Byte to simulate sending these bytes one at
+   // a time to the DUT.
+   //
    task doOper(input [7:0] op1, input [7:0] op2, input [7:0] op);
       begin
 	 svOp1 = op1;
@@ -107,18 +118,11 @@ module tb_sft(
       end
    endtask // doOper
    
-   //
-   // print out a snipped of JSON for one test
-   //
-   task jsonTest(input integer firstOne, input integer tNum, input reg[`MAXMSG * 8-1:0] oStr, input integer score);
-      begin
-	 $display("%c { \"name\" : \"test%d\",", (firstOne == 1'b1) ? " ": ",", tNum);
-	 $display("%-s", oStr);
-	 $display("\"score\" : %d}", score);
-      end
-   endtask
 
 
+   //
+   // reset generation
+   //
    initial begin
       tb_sim_rst <= 0;
       clk12m <= 0;
@@ -133,61 +137,48 @@ module tb_sft(
       tb_sim_rst <= 0;
    end
 
+   //
+   // clock generation
+   //
    always @(*) begin
       #40;
       clk12m <= ~clk12m;
    end
 
-   always @(leds) begin
-      displayLattice(leds);
-   end
-
-//   always @(posedge ut_tx_data_rdy) begin
-//	   #1;
-//	   $display("%s", ut_tx_data);
+   //
+   // when leds change display them
+   //
+//   always @(leds) begin
+//      displayLattice(leds);
 //   end
 
- 
    
    // ------------------------
    //
    // stimulus
    //
+   // each call to doOper generates one
+   // set of test stimulus
    //
    initial begin
       #400;
       #400;
       @(posedge clk12m);
-      $display("{\"vtests\" : [");
       tb_rx_data = 8'b0;
       tb_rx_data_rdy = 1'b0;
-      //
+
+
       doOper("0", "4", "+");
       waitN(4);
       doOper("5", "2", "-");
       waitN(4);
       doOper("2", "3", "-");
       waitN(4);
-      doOper("2", "3", "-");
-      waitN(4);
-      doOper("2", "3", "-");
-      waitN(4);
-      doOper("2", "3", "-");
-      waitN(4);
-      doOper("2", "3", "-");
-      waitN(4);
-      doOper("2", "3", "-");
-      waitN(4);
-      //
-      $display("]}");
+
       $finish;
 
    end
 
-   integer testCount = 0;
-   integer errorCount = 0;
-   integer score = 1;
-   integer firstOne = 1;
    //
    // tests
    //
@@ -197,16 +188,30 @@ module tb_sft(
    reg [3:0] 		 op1bin;
    reg [3:0] 		 op2bin;
 
-// `define CHECKER
+
+   //
+   //
+   // define CHECKER to turn on checking
+   //
+`define CHECKER
 `ifdef CHECKER   
    always @(posedge ut_tx_data_rdy) begin
       #1;
-      testCount = testCount + 1;
-      score = 1;
 
+      //
+      // wait for 2 ready pulses from the DUT
+      // these are echoing the user input to the terminal
+      //
       @(posedge ut_tx_data_rdy);
       @(posedge ut_tx_data_rdy);
       
+      //
+      // now check to see what operation we sent
+      // if its "+" then add svOp1 and svOp2.
+      // if its "-" then subtracrt svOp2 from svOp1
+      //
+      // check to see if the DUT has sent us the correct answer.
+      //
       if (svOp == "+") begin
 	 op1bin = ascii2bin(svOp1);
 	 op2bin = ascii2bin(svOp2);
@@ -216,14 +221,12 @@ module tb_sft(
 	 end else
 	    $display("fail : %s + %s 0x%x  == %s", svOp1, svOp2, tres, ut_tx_data);
 
-	 testCount = testCount + 1;
 	 if (tres == leds) begin
 	    $display("pass : %s + %s = 0x%x != leds %b", svOp1, svOp2, tres, leds);
 	 end else
 	    $display("fail : %s + %s 0x%x  == leds %b", svOp1, svOp2, tres, leds);
       end
       else begin
-	 firstOne = 1;
 	 op1bin = ascii2bin(svOp1);
 	 op2bin = ascii2bin(svOp2);
 	 tres = op1bin - op2bin;
@@ -232,7 +235,6 @@ module tb_sft(
 	 end else
 	    $display("fail : %s - %s 0x%x == %s", svOp1, svOp2, tres, ut_tx_data);
 
-	 testCount = testCount + 1;
 	 if (tres == leds) begin
 	    $display("pass : %s - %s = 0x%x != leds %b", svOp1, svOp2, tres, leds);
 	 end else
