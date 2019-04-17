@@ -1,7 +1,38 @@
+// --------------------------------------------------------------------
+// >>>>>>>>>>>>>>>>>>>>>>>>> COPYRIGHT NOTICE <<<<<<<<<<<<<<<<<<<<<<<<<
+// --------------------------------------------------------------------
+// Copyright (c) 2019 by UCSD CSE 140L
+// --------------------------------------------------------------------
 //
-// software testbench for simulation
+// Permission:
+//
+//   This code for use in UCSD CSE 140L.
+//   It is synthesisable for Lattice iCEstick 40HX.  
+//
+// Disclaimer:
+//
+//   This Verilog source code is intended as a design reference
+//   which illustrates how these types of functions can be implemented.
+//   It is the user's responsibility to verify their design for
+//   consistency and functionality through the use of formal
+//   verification methods.  
+//
+// -------------------------------------------------------------------- //           
+//                     Lih-Feng Tsaur
+//                     Bryan Chin
+//                     UCSD CSE Department
+//                     9500 Gilman Dr, La Jolla, CA 92093
+//                     U.S.A
+//
+// --------------------------------------------------------------------
+//
+// software testbench for simulation starter code
 //
 `define MAXMSG 256
+
+// if CHECKER is defined, then run self checking code
+// if CHECKER is not defined, display the LED patterns
+// `define CHECKER
 
 module tb_sft(
 	      output reg   tb_sim_rst,
@@ -145,13 +176,14 @@ module tb_sft(
       clk12m <= ~clk12m;
    end
 
+`ifndef CHECKER
    //
    // when leds change display them
    //
-//   always @(leds) begin
-//      displayLattice(leds);
-//   end
-
+   always @(leds) begin
+      displayLattice(leds);
+   end
+`endif
    
    // ------------------------
    //
@@ -193,7 +225,6 @@ module tb_sft(
    //
    // define CHECKER to turn on checking
    //
-`define CHECKER
 `ifdef CHECKER   
    always @(posedge ut_tx_data_rdy) begin
       #1;
