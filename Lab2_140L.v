@@ -28,7 +28,7 @@ module Lab2_140L (
  output wire L2_adder_rdy          , //pulse
  output wire [7:0] L2_led
 );
-addition add1(Gl_r1, Gl_r2, L2_rdy, L2_adder_data, carryOut);
+addition add1(Gl_r1, Gl_r2, L2_rdy, Gl_subtract, L2_adder_data, carryOut);
 //subtract(Gl_r1, Gl_r2, L2_rdy, L2_adder_data);
 sigDelay delay1(L2_adder_rdy, Gl_adder_start, clk, Gl_rst);
 assign L2_led = {carryOut, L2_adder_data};
