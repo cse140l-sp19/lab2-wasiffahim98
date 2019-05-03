@@ -207,7 +207,8 @@ module tb_sft(
       doOper("2", "3", "-");
       waitN(4);
 
-      $finish;
+      //$finish;
+		$stop;
 
    end
 
