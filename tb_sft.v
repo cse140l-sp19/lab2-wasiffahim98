@@ -32,7 +32,7 @@
 
 // if CHECKER is defined, then run self checking code
 // if CHECKER is not defined, display the LED patterns
-// `define CHECKER
+ `define CHECKER
 
 module tb_sft(
 	      output reg   tb_sim_rst,

@@ -28,10 +28,12 @@ module Lab2_140L (
  output wire L2_adder_rdy          , //pulse
  output wire [7:0] L2_led
 );
-addition add1(Gl_r1, Gl_r2, L2_rdy, Gl_subtract, carryOut, L2_adder_data);
+wire carryOut;
+
+addition add1(Gl_r1, Gl_r2, Gl_subtract, carryOut, L2_adder_data);
 //subtract(Gl_r1, Gl_r2, L2_rdy, L2_adder_data);
 sigDelay delay1(L2_adder_rdy, Gl_adder_start, clk, Gl_rst);
-assign L2_led = {carryOut, L2_adder_data};
+assign L2_led = {3'b000, carryOut, L2_adder_data[3:0]};
 
 endmodule
 
@@ -56,7 +58,7 @@ module sigDelay(
    assign sigOut = delayReg[delayVal];
 endmodule // sigDelay
 
-module addition(input[7:0] Gl_r1, input[7:0] Gl_r2, input Gl_subtract, output cout, output carryOut, output L2_adder_data);
+module addition(input[7:0] Gl_r1, input[7:0] Gl_r2, input Gl_subtract, output carryOut, output[7:0] L2_adder_data);
 	reg [3:0] a;
 	reg [3:0] b;
 	reg [3:0] c;
@@ -85,6 +87,8 @@ module addition(input[7:0] Gl_r1, input[7:0] Gl_r2, input Gl_subtract, output co
 		c[1:0] = (~b[1:0] + 'b1);
 	end
 */
+	wire cin;
+	assign cin = Gl_subtract;
 	always @(*) begin
 	if(Gl_subtract == 0) begin
 		b[0] = Gl_r2[0];
@@ -96,23 +100,27 @@ module addition(input[7:0] Gl_r1, input[7:0] Gl_r2, input Gl_subtract, output co
 	begin
 		b[3] = ~Gl_r2[3];
 		b[2] = ~Gl_r2[2];
-		b[1:0] = (~Gl_r2[1:0] + 'b1);
+		b[1] = ~Gl_r2[1];
+		b[0] = ~Gl_r2[0];
+		
 	end
 	end
-	wire cin;
-	assign cin = 1'b0;
+	
 	wire bit0,bit1,bit2;
+	wire temp;
+	
 	//wire [3:0] c;
 	//assign c[0] = b[0] ^ carryOut;
 	//assign c[1] = b[1] ^ carryOut;
 	//assign c[2] = b[2] ^ carryOut;
-	//assign c[3] = b[3] ^ carryOut;
+	//assign c[3] = b[3] ^ carryOut;               
 	
 	
 	singleBit sum0(.a(a[0]), .b(b[0]), .cin(cin), .sum(sum[0]), .cout(bit0));
 	singleBit sum1(.a(a[1]), .b(b[1]), .cin(bit0), .sum(sum[1]), .cout(bit1));
 	singleBit sum2(.a(a[2]), .b(b[2]), .cin(bit1), .sum(sum[2]), .cout(bit2));
-	singleBit sum3(.a(a[3]), .b(b[3]), .cin(bit2), .sum(sum[3]), .cout(carryOut));
+	singleBit sum3(.a(a[3]), .b(b[3]), .cin(bit2), .sum(sum[3]), .cout(temp));
+	assign carryOut = temp ^ Gl_subtract;
 	
 	
 	
@@ -141,7 +149,7 @@ module addition(input[7:0] Gl_r1, input[7:0] Gl_r2, input Gl_subtract, output co
 	always @(*)
 	begin
 	if(Gl_subtract == 0) begin
-		if(carryOut == 0) begin
+		if(temp == 0) begin
 			d = {4'b0011,sum};
 		 end
 		else
@@ -151,7 +159,7 @@ module addition(input[7:0] Gl_r1, input[7:0] Gl_r2, input Gl_subtract, output co
 	end
 	else
 	begin
-		if(carryOut == 1) begin
+		if(temp == 1) begin
 			d = {4'b0011,sum};
 		 end
 		else
@@ -161,6 +169,8 @@ module addition(input[7:0] Gl_r1, input[7:0] Gl_r2, input Gl_subtract, output co
 	end
 	end 
 	assign L2_adder_data = d;
+
+//assign L2_adder_data = {4'b011, sum};
 endmodule 
 /*
 module subtract(input G1_r1, input Gl_r2, output cout, output sum);
